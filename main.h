@@ -2,14 +2,14 @@
 #define MAIN_H
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <sys/wait.h>
 #include <string.h>
+#include <stdlib.h>
+#include <sys/wait.h>
 
 #define SIZE 1024
 
-char **token_func(char *buffer);
-void execute_func(char **command, char **env);
+void execute_func(char **commmandList, char **env);
+char **sizealloc(char *buffer);
 
 #endif

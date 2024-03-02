@@ -1,51 +1,52 @@
-#include <stdio.h>
 #include "main.h"
 
 /**
- * main - Entry point
- *
- * Return: Always 0 (Succes)
+ * main - Executes argumemts
+ * @argc: Counts the number of arguments after executable file
+ * @argv: Array of pointers composed of arguments passed after executable file
+ * @env: Pointer to an array of environment variables
+ * Return: 0(Success)
  */
 extern char **environ;
+
 int main(void)
 {
-	ssize_t character;
+	pid_t child_p;
+	char *buffer = NULL;
 	size_t bufsize = 0;
-	char *buffer = NULL, **command;
-	pid_t child;
+	ssize_t num_counter;
+	char **command;
 	char **env = environ;
 
 	while (1)
 	{
-		printf("#cisfun ");
-		character = getline(&buffer, &bufsize, stdin);
-		if (character == -1)
+		printf("#cisfun$ ");
+		num_counter = getline(&buffer, &bufsize, stdin);
+		if (num_counter == EOF)
 		{
-			perror("Error!");
-			exit(EXIT_FAILURE);
+			perror("getline");
+			free(buffer);
+			exit(EXIT_SUCCESS);
 		}
-		if (buffer[character - 1] == '\n')
+		if ((buffer[num_counter - 1]) == '\n')
+			buffer[num_counter - 1] = '\0';
+
+	       	command = sizealloc(buffer);
+		child_p = fork();
+		if (child_p == -1)
 		{
-			buffer[character - 1] = '\0';
-		}
-		command = token_func(buffer);
-		child = fork();
-		if (child == -1)
-		{
-			perror("child process not created");
+			perror("Error process not created");
 			free(buffer);
 			free(command);
-			exit(EXIT_FAILURE);
+			return (1);
 		}
-		else if (child == 0)
-		{
-			execute_func(command, env);
-		}
+		if (child_p == 0)
+			execute_func(command,env);
 		else
 		{
 			wait(NULL);
-			free(command);
 		}
+
 	}
 	free(buffer);
 	return (0);
