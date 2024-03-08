@@ -1,52 +1,57 @@
 #include "main.h"
 
 /**
- * main - Executes argumemts
- * @argc: Counts the number of arguments after executable file
- * @argv: Array of pointers composed of arguments passed after executable file
- * @env: Pointer to an array of environment variables
- * Return: 0(Success)
+ * main - Entry point
+ *
+ * Return: Always 0 (Succes)
  */
 extern char **environ;
-
 int main(void)
 {
-	pid_t child_p;
-	char *buffer = NULL;
 	size_t bufsize = 0;
-	ssize_t num_counter;
-	char **command;
+	char *buffer = NULL, **command;
+	pid_t child;
 	char **env = environ;
+	char *delim = " ";
+	int status;
+	/*char *pathVar = getenv("PATH");*/
 
-	while (1)
+	printf("#cisfun$ ");
+	while ((getline(&buffer, &bufsize, stdin)) != EOF)
 	{
-		printf("#cisfun$ ");
-		num_counter = getline(&buffer, &bufsize, stdin);
-		if (num_counter == EOF)
+		if (buffer[strlen(buffer) - 1] == '\n')
 		{
-			perror("getline");
-			free(buffer);
-			exit(EXIT_SUCCESS);
+			buffer[strlen(buffer) - 1] = '\0';
 		}
-		if ((buffer[num_counter - 1]) == '\n')
-			buffer[num_counter - 1] = '\0';
+		if (strcmp(buffer, "exit") == 0)
+			break;
 
-	       	command = sizealloc(buffer);
-		child_p = fork();
-		if (child_p == -1)
+		command = token_func(buffer, delim);
+		command[0] = converter(command[0]);
+		if (access(command[0], X_OK) == 0)
 		{
-			perror("Error process not created");
-			free(buffer);
-			free(command);
-			return (1);
+			child = fork();
+			if (child == -1)
+			{
+				perror("child process not created");
+				free(buffer);
+				free(command);
+			}
+			else if (child == 0)
+				execute_func(command, env);
+			else
+			{
+				wait(&status);
+				free(command);
+			}
 		}
-		if (child_p == 0)
-			execute_func(command,env);
 		else
 		{
-			wait(NULL);
+			printf("%s: command not found(this is from shell.c)\n", command[0]);
+			free(buffer);
+			free(command);
 		}
-
+		printf("#cisfun$ ");
 	}
 	free(buffer);
 	return (0);
